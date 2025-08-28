@@ -1,0 +1,51 @@
+{% extends "tracker/base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-500 overflow-hidden">
+
+    <!-- Animated background shapes -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-pink-400 rounded-full opacity-30 animate-pulse-slow"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-yellow-400 rounded-full opacity-30 animate-pulse-slow"></div>
+    <div class="absolute top-10 right-10 w-60 h-60 bg-green-400 rounded-full opacity-20 animate-pulse-slow"></div>
+
+    <!-- Register Card -->
+    <div class="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-xl p-10 animate-fadeIn">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6 animate-bounce">Create Your Account</h2>
+        <p class="text-center text-gray-500 mb-8">Join now and start tracking your expenses professionally!</p>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <p class="text-red-600 font-semibold">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" 
+                class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition transform duration-300">
+                Sign Up
+            </button>
+        </form>
+
+        <p class="text-center text-gray-500 mt-6">
+            Already have an account? 
+            <a href="{% url 'login' %}" class="text-indigo-600 font-semibold hover:underline">Login here</a>
+        </p>
+    </div>
+</div>
+
+<!-- Animations -->
+<style>
+@keyframes fadeIn { from {opacity:0; transform: translateY(20px);} to {opacity:1; transform: translateY(0);} }
+.animate-fadeIn { animation: fadeIn 1s ease forwards; }
+
+@keyframes pulse-slow { 0%,100% { transform: scale(1);} 50% { transform: scale(1.2);} }
+.animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+
+@keyframes bounce { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-10px);} }
+.animate-bounce { animation: bounce 2s infinite; }
+</style>
+{% endblock %}
