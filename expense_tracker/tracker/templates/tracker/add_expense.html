@@ -1,0 +1,32 @@
+{% extends "tracker/base.html" %}
+
+{% block content %}
+<div class="relative min-h-screen flex items-center justify-center bg-gradient-to-r from-green-400 to-blue-500 overflow-hidden">
+
+    <!-- Animated shapes -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-pink-400 rounded-full opacity-30 animate-pulse-slow"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-yellow-400 rounded-full opacity-30 animate-pulse-slow"></div>
+
+    <!-- Card -->
+    <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-xl p-10 animate-fadeIn">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 animate-bounce text-center">Add New Expense</h2>
+
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <p class="text-red-600 font-semibold">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" 
+                class="w-full bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-700 hover:scale-105 transition transform duration-300">
+                Add Expense
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
