@@ -1,2 +1,18 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
 *
+# Ignore virtual environment
+.venv/
+
+# Ignore Python bytecode
+*.pyc
+__pycache__/
+
+# Ignore environment variables
+.env
+
+# Ignore database
+db.sqlite3
+
+# Ignore media and profiles
+media/
+profiles/
