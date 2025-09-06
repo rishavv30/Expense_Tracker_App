@@ -1,10 +1,16 @@
+# project-level urls.py (expense_tracker/urls.py)
+
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    # Admin panel
     path('admin/', admin.site.urls),
-
-    # Include all tracker app URLs
-    path('', include('tracker.urls')),  
+    path('', include('tracker.urls')),
+   
 ]
+
+# Serve media files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

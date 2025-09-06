@@ -1,18 +1,65 @@
-
 {% extends "tracker/base.html" %}
-
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 p-6 rounded-lg shadow-lg">
+
+    <!-- Welcome -->
     <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome, {{ request.user.username }}!</h2>
 
-    <!-- Total Expense Card -->
+    <!-- Dashboard Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <h4 class="text-gray-600 font-semibold">Today</h4>
+            <p class="text-indigo-600 font-bold text-2xl">₹ {{ total_today }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <h4 class="text-gray-600 font-semibold">This Week</h4>
+            <p class="text-indigo-600 font-bold text-2xl">₹ {{ total_week }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+            <h4 class="text-gray-600 font-semibold">This Month</h4>
+            <p class="text-indigo-600 font-bold text-2xl">₹ {{ total_month }}</p>
+        </div>
+    </div>
+
+    <!-- Filter & Search -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <form method="get" class="flex flex-wrap gap-3 items-center">
+            <select name="category" class="border rounded px-2 py-1">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="date_range" class="border rounded px-2 py-1">
+                <option value="">All Dates</option>
+                <option value="today" {% if request.GET.date_range == 'today' %}selected{% endif %}>Today</option>
+                <option value="week" {% if request.GET.date_range == 'week' %}selected{% endif %}>This Week</option>
+                <option value="month" {% if request.GET.date_range == 'month' %}selected{% endif %}>This Month</option>
+            </select>
+
+            <input type="text" name="search" placeholder="Search expenses..."
+                   value="{{ request.GET.search }}"
+                   class="border rounded px-2 py-1 w-48">
+
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700 transition">
+                Apply
+            </button>
+        </form>
+    </div>
+
+    <!-- Total Expense -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6 flex justify-between items-center">
         <div>
             <h3 class="text-xl font-semibold text-gray-700">Total Expense</h3>
             <p class="text-2xl font-bold text-indigo-600">₹ {{ total_expense }}</p>
         </div>
-        <a href="{% url 'add_expense' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Add New Expense</a>
+        <a href="{% url 'add_expense' %}"
+           class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+           Add New Expense
+        </a>
     </div>
 
     <!-- Expense List -->
@@ -23,14 +70,103 @@
                 <h4 class="font-semibold text-gray-800">{{ expense.title }}</h4>
                 <p class="text-gray-600">Category: {{ expense.category }}</p>
                 <p class="text-indigo-600 font-bold">₹ {{ expense.amount }}</p>
+                <p class="text-gray-500 text-sm">{{ expense.date }}</p>
+                {% if expense.recurring %}
+                    <span class="inline-block bg-green-200 text-green-800 text-xs px-2 py-1 rounded-full mt-1">Recurring</span>
+                {% endif %}
                 <div class="mt-2 flex justify-end gap-2">
                     <a href="{% url 'edit_expense' expense.id %}" class="text-yellow-500 hover:text-yellow-700">Edit</a>
                     <a href="{% url 'delete_expense' expense.id %}" class="text-red-500 hover:text-red-700">Delete</a>
                 </div>
             </div>
         {% empty %}
-            <p class="text-gray-600">No expenses added yet. Start by adding a new expense!</p>
+            <p class="text-gray-600">No expenses match your filters. Try different options!</p>
         {% endfor %}
     </div>
+
+    <!-- Chart -->
+    <div class="bg-white rounded-lg shadow p-4 mt-6 max-w-md mx-auto">
+        <h3 class="text-gray-700 font-semibold mb-2">Category-wise Spending</h3>
+        <canvas id="expenseChart" class="w-full h-48"></canvas>
+    </div>
+
+    <!-- AI Chatbot -->
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg">
+        <h2 class="text-2xl font-bold mb-4 text-center">💬 Expense AI Assistant</h2>
+        
+        <!-- Chat Window -->
+        <div id="chat-box" class="h-80 overflow-y-auto border p-3 rounded bg-gray-50 mb-4 text-sm"></div>
+
+        <!-- Chat Form -->
+        <form id="chat-form" class="flex">
+            <input type="text" id="question" placeholder="Ask me anything about your expenses..."
+                class="flex-grow p-2 border rounded-l-lg focus:outline-none">
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-r-lg">Send</button>
+        </form>
+    </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('expenseChart').getContext('2d');
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: {{ category_labels|safe }},
+        datasets: [{
+            data: {{ category_data|safe }},
+            backgroundColor: [
+                'rgba(99, 102, 241, 0.7)',
+                'rgba(139, 92, 246, 0.7)',
+                'rgba(236, 72, 153, 0.7)',
+                'rgba(34, 197, 94, 0.7)',
+                'rgba(249, 115, 22, 0.7)'
+            ],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+
+<!-- Chatbot Script -->
+<script>
+document.getElementById("chat-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const question = document.getElementById("question").value;
+    const chatBox = document.getElementById("chat-box");
+
+    if (!question.trim()) return;
+
+    // Show user message
+    chatBox.innerHTML += `<p><b>You:</b> ${question}</p>`;
+
+    // Send request to backend
+    let response = await fetch("{% url 'ai_chat' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ message: question })
+    });
+
+    // Show bot response
+    let data = await response.json();
+    if (data.reply) {
+        chatBox.innerHTML += `<p><b>Bot:</b> ${data.reply}</p>`;
+    } else {
+        chatBox.innerHTML += `<p><b>Bot:</b> Sorry, something went wrong.</p>`;
+    }
+
+    // Reset input & auto-scroll
+    document.getElementById("question").value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+</script>
 {% endblock %}

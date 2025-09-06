@@ -1,0 +1,63 @@
+{% extends "tracker/base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-gray-50 p-6 rounded shadow-md mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-indigo-600">Edit Profile</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Profile Picture -->
+        <div class="flex items-center space-x-4">
+            <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-600">
+                {% if form.instance.profile_picture %}
+                    <img id="profilePreview" src="{{ form.instance.profile_picture.url }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div id="profilePreview" class="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-600 font-bold text-xl">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <label class="block text-gray-700 mb-1">Change Profile Picture</label>
+                {{ form.profile_picture }}
+            </div>
+        </div>
+
+        <!-- Name & Email -->
+        <div class="flex space-x-4">
+            <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First Name"
+                class="flex-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last Name"
+                class="flex-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+        </div>
+        <input type="email" name="email" value="{{ user.email }}" placeholder="Email"
+            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+
+        <!-- Bio -->
+        <div>
+            <label class="block text-gray-700 mb-1">Bio / About</label>
+            {{ form.bio }}
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-2">
+            <a href="{% url 'profile' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">Cancel</a>
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">Save</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const input = document.querySelector('input[type="file"]');
+    const preview = document.getElementById('profilePreview');
+    input?.addEventListener('change', function() {
+        const file = this.files[0];
+        if(file){
+            const reader = new FileReader();
+            reader.onload = e => preview.src = e.target.result;
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
