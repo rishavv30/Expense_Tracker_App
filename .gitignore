@@ -6,13 +6,10 @@
 # Ignore Python bytecode
 *.pyc
 __pycache__/
-
 # Ignore environment variables
 .env
-
 # Ignore database
 db.sqlite3
-
 # Ignore media and profiles
 media/
 profiles/
